@@ -48,4 +48,5 @@ And will be transformed to this (along with the file name):
 
 ## Run tool:
 EntityModelNameFormatter SOURCE_FOLDER TARGET_FOLDER
+
 As result the TARGET_FOLDER is deleted and recreated.
