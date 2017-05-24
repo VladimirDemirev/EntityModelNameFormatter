@@ -4,6 +4,19 @@ namespace EntityModelNameFormatter
 {
     class RegexFuncs
     {
+        /// <summary>
+        /// Insert [Column("real_database_name")] and [Key]  - before property
+        /// </summary>
+        private static string getPropAttributes(string propName)
+        {
+            string r = "        [Column(\"" + propName + "\")]" + System.Environment.NewLine;
+
+            if (propName.ToLower().Equals("id"))
+                r = "        [Key]" + System.Environment.NewLine + r;
+            
+            return r;
+        }
+
         public static string replaceClassName(string s, IFormatter formatter, string oldName, string newName)
         {
             string result = s;
@@ -15,17 +28,21 @@ namespace EntityModelNameFormatter
         //REGEX: XXXX { get; set; }
         public static string regexPropNames(string s, IFormatter formatter)
         {
-            var result = Regex.Replace(s, @"\s[a-z_0-9]+\s{\sget;\sset;", delegate (Match match)
+            var result = Regex.Replace(s, @"\r\n.*\s[a-z_0-9]+\s{\sget;\sset;", delegate (Match match)
             {
-                string v = match.ToString();
+                string matched = match.ToString();
 
-                string[] a = v.Split(new char[] { '{' });
-                string n = formatter.GetFormattedName(a[0].Trim());
+                string origName = Regex.Match(matched, @"\s[a-z_0-9]+\s{").Value;
+                origName = origName.Replace(" {", "").TrimStart();
+                string newName = formatter.GetFormattedName(origName);
 
-                return " " + n + " { get; set;";
+                string newLine = matched.Replace(origName + " {", newName + " {").Trim();
+
+                string r = System.Environment.NewLine + (matched.Contains(" virtual ") ? "" : getPropAttributes(origName)) + "        " + newLine;
+                return r;
             });
 
-            //return Regex.Replace(s, @"\s[a-z]+...get.\s.*", delegate (Match match)
+
             return result;
         }
 
